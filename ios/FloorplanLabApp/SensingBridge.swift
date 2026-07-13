@@ -141,13 +141,30 @@ enum SensingBridge {
     /// chirp played by `audioPlay` is entirely a `.kotoba`/CLJC-side
     /// concern (`floorplan-lab.sonar/cross-correlate`).
     static func audioRecord(durationMs: Int) async -> [Float] {
+        // Recording (unlike playback) requires explicit mic permission --
+        // without this, `audioEngine.start()` below fails silently and the
+        // tap never receives a single buffer, which previously showed up
+        // as an indistinguishable "0 samples" result on a real device.
+        let granted = await withCheckedContinuation { (continuation: CheckedContinuation<Bool, Never>) in
+            AVAudioApplication.requestRecordPermission { granted in
+                continuation.resume(returning: granted)
+            }
+        }
+        guard granted else {
+            print("[SensingBridge] audioRecord: microphone permission denied")
+            return []
+        }
+
         let session = AVAudioSession.sharedInstance()
         try? session.setCategory(.playAndRecord, options: [.defaultToSpeaker, .mixWithOthers])
         try? session.setActive(true)
 
         let inputNode = audioEngine.inputNode
         let recordingFormat = inputNode.outputFormat(forBus: 0)
-        guard recordingFormat.sampleRate > 0 else { return [] }
+        guard recordingFormat.sampleRate > 0 else {
+            print("[SensingBridge] audioRecord: input node reports sampleRate 0, aborting")
+            return []
+        }
 
         let lock = NSLock()
         var samples: [Float] = []
@@ -160,7 +177,11 @@ enum SensingBridge {
                 lock.unlock()
             }
             if !audioEngine.isRunning {
-                try? audioEngine.start()
+                do {
+                    try audioEngine.start()
+                } catch {
+                    print("[SensingBridge] audioRecord: audioEngine.start() failed: \(error)")
+                }
             }
             DispatchQueue.main.asyncAfter(deadline: .now() + Double(durationMs) / 1000.0) {
                 inputNode.removeTap(onBus: 0)
