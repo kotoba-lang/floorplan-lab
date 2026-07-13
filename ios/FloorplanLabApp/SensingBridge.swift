@@ -93,13 +93,17 @@ enum SensingBridge {
     /// cross-correlating a recorded echo against it is entirely a
     /// `.kotoba`/CLJC-side concern (`sonar/cross-correlate`).
     ///
-    /// Fire-and-forget by design (no return value), matching
-    /// `kotoba.sensing-host/play-audio!`'s boolean-success shape being
-    /// reduced to "best effort, no failure surfaced" here -- a caller
-    /// that needs to know playback actually started should watch
-    /// `AVAudioSession` interruption notifications separately (out of
-    /// this thin shim's scope).
-    static func audioPlay(frequencyHz: Double, durationMs: Int) {
+    /// Returns the exact PCM samples it just played (`@discardableResult`
+    /// so the original fire-and-forget call sites don't need to change).
+    /// This is NOT new sonar logic -- it is the same linear-sweep buffer
+    /// this function already synthesizes internally to feed the player
+    /// node, now also handed back so a caller (`FloorplanMapView`) can
+    /// forward the SAME samples to `floorplan-lab.sonar/estimate-wall-distance-m`
+    /// (browser/cljs side) for cross-correlation, instead of that caller
+    /// re-deriving the sweep from scratch and risking the two copies
+    /// drifting apart.
+    @discardableResult
+    static func audioPlay(frequencyHz: Double, durationMs: Int) -> [Float] {
         let session = AVAudioSession.sharedInstance()
         try? session.setCategory(.playAndRecord, options: [.defaultToSpeaker, .mixWithOthers])
         try? session.setActive(true)
@@ -110,15 +114,18 @@ enum SensingBridge {
               let format = AVAudioFormat(standardFormatWithSampleRate: sampleRate, channels: 1),
               let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: frameCount),
               let channel = buffer.floatChannelData?[0]
-        else { return }
+        else { return [] }
         buffer.frameLength = frameCount
 
         let startFreq = frequencyHz
         let endFreq = frequencyHz * 2
+        var samples = [Float](repeating: 0, count: Int(frameCount))
         for frame in 0..<Int(frameCount) {
             let t = Double(frame) / sampleRate
             let instantaneousFreq = startFreq + (endFreq - startFreq) * (t / durationSec)
-            channel[frame] = Float(sin(2 * Double.pi * instantaneousFreq * t))
+            let value = Float(sin(2 * Double.pi * instantaneousFreq * t))
+            channel[frame] = value
+            samples[frame] = value
         }
 
         if !playerAttached {
@@ -131,6 +138,8 @@ enum SensingBridge {
         }
         playerNode.scheduleBuffer(buffer, at: nil, options: .interrupts)
         playerNode.play()
+
+        return samples
     }
 
     /// Records DURATIONMS milliseconds of mono PCM audio from the input

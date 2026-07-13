@@ -17,6 +17,16 @@ struct ContentView: View {
         NavigationStack {
             Form {
                 Section {
+                    NavigationLink("Open 3D floorplan viewer") {
+                        FloorplanMapView()
+                            .navigationTitle("Floorplan Lab -- 3D viewer")
+                            .navigationBarTitleDisplayMode(.inline)
+                            .ignoresSafeArea(edges: .bottom)
+                    }
+                } footer: {
+                    Text("WKWebView host for the web/ cljs 3D viewer (kotoba-lang/webgpu render-IR). Streams raw motion/audio/BLE samples from SensingBridge into it; all floorplan estimation runs in the cljs bundle, not in this app.")
+                }
+                Section {
                     Button("Run ALL (prints to console log)") { Task { await runAllAndLog() } }
                 } footer: {
                     Text("For automated verification via `devicectl device process launch --console` -- runs every capability in sequence and prints each result with a unique marker.")
