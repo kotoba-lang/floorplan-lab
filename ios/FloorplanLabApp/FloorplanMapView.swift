@@ -30,9 +30,51 @@ struct FloorplanMapView: UIViewRepresentable {
     var bleBeaconPositions: [String: (x: Double, y: Double)] = [:]
 
     func makeUIView(context: Context) -> WKWebView {
-        let webView = WKWebView(frame: .zero)
+        // DEBUG-ONLY: forwards the page's console.log/warn/error to Swift's
+        // stdout (visible via `devicectl device process launch --console`)
+        // so a real-device rendering problem can be diagnosed without
+        // Safari Web Inspector. No fusion/rendering logic lives here --
+        // this only relays text that already exists in the page.
+        let consoleForwarderScript = """
+        (function () {
+          function forward(level, args) {
+            try {
+              window.webkit.messageHandlers.log.postMessage(
+                level + ': ' + Array.prototype.slice.call(args).map(function (a) {
+                  try { return typeof a === 'string' ? a : JSON.stringify(a); }
+                  catch (e) { return String(a); }
+                }).join(' ')
+              );
+            } catch (e) {}
+          }
+          ['log', 'warn', 'error'].forEach(function (level) {
+            var orig = console[level];
+            console[level] = function () {
+              forward(level, arguments);
+              orig.apply(console, arguments);
+            };
+          });
+          window.onerror = function (message, source, lineno, colno, error) {
+            forward('error', ['window.onerror:', message, source + ':' + lineno + ':' + colno]);
+          };
+        })();
+        """
+        let userScript = WKUserScript(
+            source: consoleForwarderScript, injectionTime: .atDocumentStart, forMainFrameOnly: true
+        )
+        let contentController = WKUserContentController()
+        contentController.addUserScript(userScript)
+        contentController.add(context.coordinator, name: "log")
+
+        let configuration = WKWebViewConfiguration()
+        configuration.userContentController = contentController
+
+        let webView = WKWebView(frame: .zero, configuration: configuration)
         webView.isOpaque = false
         webView.backgroundColor = .black
+        if #available(iOS 16.4, *) {
+            webView.isInspectable = true
+        }
 
         if let indexURL = Bundle.main.url(forResource: "index", withExtension: "html", subdirectory: "public") {
             webView.loadFileURL(indexURL, allowingReadAccessTo: indexURL.deletingLastPathComponent())
@@ -62,7 +104,7 @@ struct FloorplanMapView: UIViewRepresentable {
     /// other or `sampleIndex` -- Swift concurrency interleaves them at
     /// `await` points but never overlaps two bodies on the same actor.
     @MainActor
-    final class Coordinator {
+    final class Coordinator: NSObject, WKScriptMessageHandler {
         weak var webView: WKWebView?
         private let bleBeaconPositions: [String: (x: Double, y: Double)]
         private var motionTask: Task<Void, Never>?
@@ -83,6 +125,14 @@ struct FloorplanMapView: UIViewRepresentable {
 
         init(bleBeaconPositions: [String: (x: Double, y: Double)]) {
             self.bleBeaconPositions = bleBeaconPositions
+            super.init()
+        }
+
+        /// DEBUG-ONLY: relays the page's console output, forwarded by the
+        /// `consoleForwarderScript` injected in `makeUIView`, to Swift's
+        /// stdout with a greppable prefix.
+        func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+            print("[WebConsole] \(message.body)")
         }
 
         func start() {
