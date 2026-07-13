@@ -45,6 +45,11 @@ struct ContentView: View {
             .disabled(isBusy)
             .navigationTitle("FloorplanLab SensingBridge")
         }
+        .task {
+            // Auto-run once on launch so a `devicectl --console` capture
+            // can verify all capabilities without any manual tap.
+            await runAllAndLog()
+        }
     }
 
     private func runMotion() async {
