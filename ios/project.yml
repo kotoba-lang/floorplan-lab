@@ -21,6 +21,19 @@ targets:
       - path: FloorplanLabApp
         excludes:
           - Info.plist
+      # web/'s built static bundle (index.html + js/app.js -- the cljs
+      # 3D viewer, see ../web/README-equivalent doc comments in
+      # ../web/src/floorplan_lab/viewer.cljs / .../viewer/build.clj).
+      # `type: folder` makes this a folder REFERENCE (blue folder), which
+      # preserves the "public/js/app.js" nesting inside the app bundle --
+      # a plain group would flatten it and break index.html's relative
+      # "./js/app.js" script src plus FloorplanMapView's
+      # `Bundle.main.url(forResource:withExtension:subdirectory:)` lookup.
+      - path: ../web/public
+        name: public
+        type: folder
+        buildPhase: resources
+        optional: true
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: dev.kotoba-lang.FloorplanLab
