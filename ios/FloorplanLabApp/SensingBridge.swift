@@ -159,6 +159,15 @@ enum SensingBridge {
         try? session.setCategory(.playAndRecord, options: [.defaultToSpeaker, .mixWithOthers])
         try? session.setActive(true)
 
+        // The engine's node graph (including the input bus's negotiated
+        // format) only latches correctly when reconfigured from a stopped
+        // state -- if `audioPlay` already started the engine for
+        // output-only, `inputNode.outputFormat(forBus:)` reports a stale
+        // sampleRate of 0 until we stop, re-touch the graph, and restart.
+        if audioEngine.isRunning {
+            audioEngine.stop()
+        }
+
         let inputNode = audioEngine.inputNode
         let recordingFormat = inputNode.outputFormat(forBus: 0)
         guard recordingFormat.sampleRate > 0 else {
@@ -176,12 +185,11 @@ enum SensingBridge {
                 samples.append(contentsOf: UnsafeBufferPointer(start: channelData, count: Int(buffer.frameLength)))
                 lock.unlock()
             }
-            if !audioEngine.isRunning {
-                do {
-                    try audioEngine.start()
-                } catch {
-                    print("[SensingBridge] audioRecord: audioEngine.start() failed: \(error)")
-                }
+            audioEngine.prepare()
+            do {
+                try audioEngine.start()
+            } catch {
+                print("[SensingBridge] audioRecord: audioEngine.start() failed: \(error)")
             }
             DispatchQueue.main.asyncAfter(deadline: .now() + Double(durationMs) / 1000.0) {
                 inputNode.removeTap(onBus: 0)
