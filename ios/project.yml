@@ -1,0 +1,32 @@
+name: FloorplanLab
+options:
+  bundleIdPrefix: dev.kotoba-lang
+  deploymentTarget:
+    iOS: "17.0"
+  developmentLanguage: en
+
+settings:
+  base:
+    DEVELOPMENT_TEAM: 8K67TW5846
+    CODE_SIGN_STYLE: Automatic
+    SWIFT_VERSION: 5.0
+    IPHONEOS_DEPLOYMENT_TARGET: "17.0"
+
+targets:
+  FloorplanLabApp:
+    type: application
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: FloorplanLabApp
+        excludes:
+          - Info.plist
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.kotoba-lang.FloorplanLab
+        PRODUCT_NAME: FloorplanLabApp
+        TARGETED_DEVICE_FAMILY: "1"
+        DEVELOPMENT_TEAM: 8K67TW5846
+        CODE_SIGN_STYLE: Automatic
+        INFOPLIST_FILE: FloorplanLabApp/Info.plist
+        GENERATE_INFOPLIST_FILE: NO
