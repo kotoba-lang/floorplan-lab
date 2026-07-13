@@ -7,7 +7,7 @@ options:
 
 settings:
   base:
-    DEVELOPMENT_TEAM: 8K67TW5846
+    DEVELOPMENT_TEAM: 3A5CBTEBFP
     CODE_SIGN_STYLE: Automatic
     SWIFT_VERSION: 5.0
     IPHONEOS_DEPLOYMENT_TARGET: "17.0"
@@ -26,7 +26,7 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: dev.kotoba-lang.FloorplanLab
         PRODUCT_NAME: FloorplanLabApp
         TARGETED_DEVICE_FAMILY: "1"
-        DEVELOPMENT_TEAM: 8K67TW5846
+        DEVELOPMENT_TEAM: 3A5CBTEBFP
         CODE_SIGN_STYLE: Automatic
         INFOPLIST_FILE: FloorplanLabApp/Info.plist
         GENERATE_INFOPLIST_FILE: NO
