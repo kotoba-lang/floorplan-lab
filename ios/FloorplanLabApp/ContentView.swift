@@ -16,6 +16,11 @@ struct ContentView: View {
     var body: some View {
         NavigationStack {
             Form {
+                Section {
+                    Button("Run ALL (prints to console log)") { Task { await runAllAndLog() } }
+                } footer: {
+                    Text("For automated verification via `devicectl device process launch --console` -- runs every capability in sequence and prints each result with a unique marker.")
+                }
                 Section("motion — CMDeviceMotion (cap 234)") {
                     Button("Read 1 motion sample") { Task { await runMotion() } }
                     Text(motionText).font(.footnote).foregroundStyle(.secondary)
@@ -78,6 +83,31 @@ struct ContentView: View {
         defer { isBusy = false }
         wifiText = await SensingBridge.wifiInfo()
             ?? "nil (expected without Access-WiFi-Information entitlement / granted location permission — see SensingBridge.wifiInfo doc comment)"
+    }
+
+    /// Runs every capability once, in sequence, printing each result with
+    /// a `[RUN-ALL]` marker so a `devicectl --console` capture can grep
+    /// for real-device verification output without any manual tapping.
+    private func runAllAndLog() async {
+        isBusy = true
+        defer { isBusy = false }
+
+        await runMotion()
+        print("[RUN-ALL] motion: \(motionText)")
+
+        await runAudioPlay()
+        print("[RUN-ALL] audio-play: \(audioPlayText)")
+
+        await runAudioRecord()
+        print("[RUN-ALL] audio-record: \(audioRecordText)")
+
+        await runBleScan()
+        print("[RUN-ALL] ble-scan: \(bleText.replacingOccurrences(of: "\n", with: " | "))")
+
+        await runWifiInfo()
+        print("[RUN-ALL] wifi-info: \(wifiText)")
+
+        print("[RUN-ALL] DONE")
     }
 }
 
