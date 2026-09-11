@@ -6,7 +6,7 @@ import WebKit
 /// declarative render-IR executor). ALL floorplan estimation
 /// (dead-reckoning / chirp-echo sonar / BLE trilateration / sensor
 /// fusion) runs in that cljs bundle, not here -- see
-/// `web/src/floorplan_lab/viewer.cljs`'s docstring "RESPONSIBILITY
+/// `web/src/floorplan_lab/viewer.cljk`'s docstring "RESPONSIBILITY
 /// BOUNDARY". This file has exactly two jobs:
 ///
 ///   1. Load `public/index.html` (bundled as a folder resource -- see
