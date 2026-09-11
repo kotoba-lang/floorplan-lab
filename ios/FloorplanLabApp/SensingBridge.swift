@@ -18,7 +18,7 @@ import CoreLocation
 ///   - performs NO rate limiting, NO persistence, NO sensor fusion,
 ///     NO filtering/smoothing beyond what the OS API itself already does,
 ///   - is the DRIVER INJECTION TARGET described in
-///     `src/floorplan_lab/sensing_bridge.cljc`'s docstring (the mirrored
+///     `src/floorplan_lab/sensing_bridge.cljk`'s docstring (the mirrored
 ///     `{:motion-read :audio-play :audio-record :ble-scan :wifi-info}`
 ///     driver-map contract) -- a future bridge from this Swift code back
 ///     into that CLJC driver map (WKWebView JS bridge, XPC, or similar)

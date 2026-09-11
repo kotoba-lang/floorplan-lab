@@ -28,7 +28,7 @@ explicitly-authorized increment (owner authorization recorded
 and what it deliberately does not do.
 
 Real-device connection is a **driver injection point**, not a rewrite:
-`src/floorplan_lab/sensing_bridge.cljc` defines the driver-map contract
+`src/floorplan_lab/sensing_bridge.cljk` defines the driver-map contract
 (mirroring `kotoba.sensing-host`'s shape) that a real native shim would
 implement; wiring in a real driver there does not require touching
 `motion.cljc` / `sonar.cljc` / `ble.cljc` / `fusion.cljc` at all.

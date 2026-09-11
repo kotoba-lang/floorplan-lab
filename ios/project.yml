@@ -23,7 +23,7 @@ targets:
           - Info.plist
       # web/'s built static bundle (index.html + js/app.js -- the cljs
       # 3D viewer, see ../web/README-equivalent doc comments in
-      # ../web/src/floorplan_lab/viewer.cljs / .../viewer/build.clj).
+      # ../web/src/floorplan_lab/viewer.cljk / .../viewer/build.clj).
       # `type: folder` makes this a folder REFERENCE (blue folder), which
       # preserves the "public/js/app.js" nesting inside the app bundle --
       # a plain group would flatten it and break index.html's relative
