@@ -11,7 +11,7 @@ import WebKit
 ///
 ///   1. Load `public/index.html` (bundled as a folder resource -- see
 ///      `ios/project.yml`'s `public` source entry, built by
-///      `web/README`'s `clojure -M:build` + `npx shadow-cljs release app`)
+///      `web/README`'s `kbb -M:build` + `amu compile --target wasm32-browser app`)
 ///      into a `WKWebView`.
 ///   2. Periodically pull RAW samples from `SensingBridge` and hand them,
 ///      completely unprocessed, to `window.FloorplanLabViewer`'s ingest
@@ -82,7 +82,7 @@ struct FloorplanMapView: UIViewRepresentable {
             webView.loadHTMLString(
                 "<p style=\"font-family:-apple-system;padding:24px\">public/index.html not found in the app bundle "
                     + "-- build web/ first (see web/README section of the repo README: "
-                    + "`clojure -M:build` then `npx shadow-cljs release app` from web/), then re-run "
+                    + "`kbb -M:build` then `amu compile --target wasm32-browser app` from web/), then re-run "
                     + "`xcodegen generate`.</p>",
                 baseURL: nil
             )

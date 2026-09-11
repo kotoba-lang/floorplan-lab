@@ -11,8 +11,8 @@
   kotoba-uiux 'app CSS always wins, don't fight specificity' rule expects,
   not a rule violation.
 
-  Run via `clojure -M:build` from `web/` -- writes `public/index.html`,
-  which `shadow-cljs release app` (see `shadow-cljs.edn`) then joins with
+  Run via `kbb -M:build` from `web/` -- writes `public/index.html`,
+  which `amu compile --target wasm32-browser app` (see `shadow-cljs.edn`) then joins with
   the compiled `public/js/app.js` bundle. Both are checked into git (same
   convention as the kami-app-* siblings) so `ios/` can bundle `public/` as
   a static resource without a build step at Xcode time."
