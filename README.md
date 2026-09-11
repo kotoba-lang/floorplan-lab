@@ -134,8 +134,8 @@ agent's scope.
 ## Verify
 
 ```sh
-clojure -M:test
-clojure -M:lint
+kbb -M:test
+kbb -M:lint
 ```
 
 ## Future work (explicitly out of scope for this first increment)
